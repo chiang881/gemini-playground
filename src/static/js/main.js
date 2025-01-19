@@ -369,8 +369,10 @@ client.on('audio', async (data) => {
         await resumeAudioContext();
         const streamer = await ensureAudioInitialized();
         streamer.addPCM16(new Uint8Array(data));
+        console.log('收到音频回复，文本内容:', data.text);
         keywordDetector.detect(data.text);
     } catch (error) {
+        console.error('处理音频错误:', error);
         logMessage(`Error processing audio: ${error.message}`, 'system');
     }
 });
@@ -387,6 +389,7 @@ client.on('content', (data) => {
 
         const text = data.modelTurn.parts.map(part => part.text).join('');
         if (text) {
+            console.log('收到文本回复:', text);
             logMessage(text, 'ai');
             keywordDetector.detect(text);
         }

@@ -611,3 +611,51 @@ body {
     color: #666;
     font-size: 12px;
 }
+
+#keyword-detection-container {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+#keyword-detection-container h3 {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    font-size: 1.1em;
+}
+
+#keyword-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.keyword-item {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#keywords-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-top: 5px;
+}

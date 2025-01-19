@@ -5,6 +5,7 @@ import { CONFIG } from './config/config.js';
 import { Logger } from './utils/logger.js';
 import { VideoManager } from './video/video-manager.js';
 import { ScreenRecorder } from './video/screen-recorder.js';
+import { KeywordDetector } from './utils/keyword-detector.js';
 
 /**
  * @fileoverview Main entry point for the application.
@@ -84,6 +85,9 @@ let isUsingTool = false;
 
 // Multimodal Client
 const client = new MultimodalLiveClient();
+
+// 初始化关键词检测器
+const keywordDetector = new KeywordDetector();
 
 /**
  * Logs a message to the UI.
@@ -175,6 +179,7 @@ async function ensureAudioInitialized() {
  */
 async function handleMicToggle() {
     if (!isRecording) {
+        keywordDetector.clear();
         try {
             await ensureAudioInitialized();
             audioRecorder = new AudioRecorder();
@@ -337,6 +342,7 @@ function disconnectFromWebsocket() {
  * Handles sending a text message.
  */
 function handleSendMessage() {
+    keywordDetector.clear();
     const message = messageInput.value.trim();
     if (message) {
         logMessage(message, 'user');
@@ -363,6 +369,7 @@ client.on('audio', async (data) => {
         await resumeAudioContext();
         const streamer = await ensureAudioInitialized();
         streamer.addPCM16(new Uint8Array(data));
+        keywordDetector.detect(data.text);
     } catch (error) {
         logMessage(`Error processing audio: ${error.message}`, 'system');
     }
@@ -381,6 +388,7 @@ client.on('content', (data) => {
         const text = data.modelTurn.parts.map(part => part.text).join('');
         if (text) {
             logMessage(text, 'ai');
+            keywordDetector.detect(text);
         }
     }
 });

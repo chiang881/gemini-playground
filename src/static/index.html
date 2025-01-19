@@ -43,11 +43,19 @@
                     <input type="number" id="fps-input" placeholder="Video FPS" value="1" min="1" max="30" step="1"/>
                     <span class="fps-help">Higher FPS need more network bandwidth</span>
                 </div>
+                <div class="setting-container">
+                    <span class="setting-label">关键词检测: </span>
+                    <input type="text" id="keywords-input" placeholder="输入关键词,用逗号分隔" />
+                </div>
                 <textarea id="system-instruction" placeholder="Enter custom system instructions..." rows="6"></textarea>
                 <button id="apply-config">Confirm</button>
             </div>
         </div>
         <button id="connect-button">Connect</button>
+        <div id="keyword-detection-container">
+            <h3>关键词检测结果</h3>
+            <div id="keyword-results"></div>
+        </div>
         <div id="logs-container"></div>
         <input type="text" id="message-input" placeholder="Enter message...">
         <button id="send-button">Send</button>

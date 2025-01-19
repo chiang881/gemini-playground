@@ -370,32 +370,43 @@ client.on('audio', async (data) => {
         const streamer = await ensureAudioInitialized();
         console.log('收到完整的音频数据:', data);
         
-        // 检查音频数据的结构
+        // 检查数据结构
         if (typeof data === 'object' && data !== null) {
-            streamer.addPCM16(new Uint8Array(data.audio || data));
+            let textContent = '';
             
-            // 如果文本在 data.text 中
+            // 尝试从不同可能的属性中获取文本
             if (data.text) {
-                console.log('收到音频回复，文本内容:', data.text);
-                keywordDetector.detect(data.text);
+                textContent = data.text;
+            } else if (data.content && typeof data.content === 'string') {
+                textContent = data.content;
+            } else if (data.transcript) {
+                textContent = data.transcript;
+            } else if (data.parts && Array.isArray(data.parts)) {
+                textContent = data.parts.map(part => part.text || '').join(' ');
             }
-            // 如果文本在 data.transcript 中
-            else if (data.transcript) {
-                console.log('收到音频回复，文本内容(transcript):', data.transcript);
-                keywordDetector.detect(data.transcript);
-            }
-            // 如果文本在其他地方，打印完整数据结构以便调试
-            else {
+            
+            if (textContent) {
+                console.log('提取到的文本内容:', textContent);
+                keywordDetector.detect(textContent);
+            } else {
                 console.log('未找到文本内容，完整数据结构:', data);
             }
         }
+        
+        // 处理音频数据
+        if (data instanceof ArrayBuffer) {
+            streamer.addPCM16(new Uint8Array(data));
+        } else if (data.audio instanceof ArrayBuffer) {
+            streamer.addPCM16(new Uint8Array(data.audio));
+        }
     } catch (error) {
-        console.error('处理音频错误:', error);
+        console.error('音频处理错误:', error);
         logMessage(`Error processing audio: ${error.message}`, 'system');
     }
 });
 
 client.on('content', (data) => {
+    console.log('收到内容数据:', data);
     if (data.modelTurn) {
         if (data.modelTurn.parts.some(part => part.functionCall)) {
             isUsingTool = true;
@@ -405,12 +416,16 @@ client.on('content', (data) => {
             Logger.info('Tool usage completed');
         }
 
-        const text = data.modelTurn.parts.map(part => part.text).join('');
+        const text = data.modelTurn.parts.map(part => part.text || '').join('');
         if (text) {
-            console.log('收到文本回复:', text);
             logMessage(text, 'ai');
+            console.log('收到文本回复,准备检测关键词:', text);
             keywordDetector.detect(text);
+        } else {
+            console.log('未从modelTurn中找到文本内容');
         }
+    } else {
+        console.log('数据中没有modelTurn属性');
     }
 });
 

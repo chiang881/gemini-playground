@@ -368,9 +368,27 @@ client.on('audio', async (data) => {
     try {
         await resumeAudioContext();
         const streamer = await ensureAudioInitialized();
-        streamer.addPCM16(new Uint8Array(data));
-        console.log('收到音频回复，文本内容:', data.text);
-        keywordDetector.detect(data.text);
+        console.log('收到完整的音频数据:', data);
+        
+        // 检查音频数据的结构
+        if (typeof data === 'object' && data !== null) {
+            streamer.addPCM16(new Uint8Array(data.audio || data));
+            
+            // 如果文本在 data.text 中
+            if (data.text) {
+                console.log('收到音频回复，文本内容:', data.text);
+                keywordDetector.detect(data.text);
+            }
+            // 如果文本在 data.transcript 中
+            else if (data.transcript) {
+                console.log('收到音频回复，文本内容(transcript):', data.transcript);
+                keywordDetector.detect(data.transcript);
+            }
+            // 如果文本在其他地方，打印完整数据结构以便调试
+            else {
+                console.log('未找到文本内容，完整数据结构:', data);
+            }
+        }
     } catch (error) {
         console.error('处理音频错误:', error);
         logMessage(`Error processing audio: ${error.message}`, 'system');
